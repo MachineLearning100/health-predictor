@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 from sklearn.linear_model import LinearRegression
+import matplotlib.pyplot as plt
 
 # Sample data
 data = {
@@ -18,16 +19,36 @@ y = df['HealthScore']
 model = LinearRegression()
 model.fit(X, y)
 
-# Streamlit app
-st.title("🍎 Health Score Predictor")
-st.write("Estimate your health score based on your daily habits!")
+# UI
+st.title("🍎 Health Score Predictor 2.0")
+st.write("Now with 📊 data visualizations!")
 
-eat_apples = st.slider("How many apples do you eat daily?", 0, 10, 3)
-sleep_hours = st.slider("How many hours do you sleep?", 0, 12, 7)
-exercise = st.slider("How many minutes do you exercise?", 0, 120, 30)
-water = st.slider("How many cups of water do you drink?", 0, 12, 4)
+# Sliders for user input
+eat_apples = st.slider("🍏 Apples per day", 0, 10, 3)
+sleep_hours = st.slider("😴 Sleep hours", 0, 12, 7)
+exercise = st.slider("🏃 Exercise minutes", 0, 120, 30)
+water = st.slider("💧 Water cups", 0, 12, 4)
 
-input_data = [[eat_apples, sleep_hours, exercise, water]]
-prediction = model.predict(input_data)[0]
+# Prediction
+user_input = [[eat_apples, sleep_hours, exercise, water]]
+prediction = model.predict(user_input)[0]
+st.metric("🩺 Your Predicted Health Score", f"{round(prediction, 1)} / 100")
 
-st.metric("🩺 Predicted Health Score", f"{round(prediction, 1)} / 100")
+# 📊 Bar chart of user's inputs
+st.subheader("🔍 Your Daily Habits Breakdown")
+user_df = pd.DataFrame({
+    'Habit': ['Apples', 'Sleep', 'Exercise', 'Water'],
+    'Value': [eat_apples, sleep_hours, exercise, water]
+})
+st.bar_chart(user_df.set_index('Habit'))
+
+# 📈 Scatter plot: Exercise vs Health (colored by apples)
+st.subheader("📈 Sample Data: Exercise vs Health Score")
+fig, ax = plt.subplots()
+scatter = ax.scatter(df['ExerciseMinutes'], df['HealthScore'],
+                     c=df['EatApple'], cmap='YlGn', edgecolor='k')
+ax.set_xlabel("Exercise Minutes")
+ax.set_ylabel("Health Score")
+ax.set_title("Training Data: Health vs Exercise")
+plt.colorbar(scatter, label='🍎 Apples Eaten')
+st.pyplot(fig)
